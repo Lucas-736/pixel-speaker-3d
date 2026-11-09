@@ -1,0 +1,56 @@
+<!doctype html>
+<html lang="zh-CN"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Pixel Speaker 3D</title>
+<style>*{box-sizing:border-box}body{margin:0;background:#0b111b;color:#e9f4ff;font:14px -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}header{padding:17px 18px;border-bottom:1px solid #2c3b4d}h1{font-size:20px;margin:0 0 5px}small,p{color:#a4b7c9}#stage{height:57vh;min-height:350px;max-height:650px;position:relative;background:radial-gradient(ellipse,#24384b,#0b111b 73%);touch-action:none}canvas{display:block;touch-action:none}#status{position:absolute;left:12px;bottom:12px;color:#b8d1df;font-size:12px;pointer-events:none}#error{display:none;padding:16px;background:#422a32;color:#fff}main{max-width:1000px;margin:auto}.controls{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:12px;padding:14px}.panel{background:#172331;border:1px solid #35485b;border-radius:12px;padding:13px}.panel b{display:block;margin-bottom:10px}button{background:#25384a;color:#e7f8ff;border:1px solid #4a6076;padding:10px;border-radius:9px;margin:2px}button:active{background:#177d79}label{display:flex;justify-content:space-between;margin:12px 0}input[type=range]{width:55%;accent-color:#27d8c4}footer{padding:10px 18px 25px;line-height:1.7;color:#9bafc2}</style>
+<script type="importmap">{"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.170.0/build/three.module.js","three/addons/":"https://cdn.jsdelivr.net/npm/three@0.170.0/examples/jsm/"}}</script></head>
+<body><main><header><h1>PIXEL SPEAKER / 3D STUDIO</h1><small>手机可旋转的 DIY 像素歌词音箱 · V3.1</small></header>
+<div id="stage"><div id="status">加载中… 单指旋转 · 双指缩放</div></div><div id="error">3D 加载失败。请检查网络，或使用新版 Safari / Chrome 打开。</div>
+<div class="controls"><section class="panel"><b>观察视角</b><button data-view="iso">45°</button><button data-view="front">正面</button><button data-view="top">俯视</button><button data-view="back">背面</button></section>
+<section class="panel"><b>像素屏预览</b><button data-mode="lyrics">歌词</button><button data-mode="clock">时钟</button><button data-mode="spectrum">频谱</button></section>
+<section class="panel"><b>外形尺寸</b><label>宽度 <output id="wv">300 mm</output></label><input id="width" type="range" min="280" max="380" value="300"><label>深度 <output id="dv">85 mm</output></label><input id="depth" type="range" min="70" max="120" value="85"></section>
+<section class="panel"><b>外观设置</b><label>底部 RGB 灯 <input id="rgb" type="checkbox" checked></label><button id="reset">恢复默认视角</button></section></div>
+<footer>外观概念：300 × 105 × 85 mm；P2.5 64×32 RGB 屏幕，发光区约 160 × 80 mm；左右 40 mm 扬声器。不是可打印的 CAD/STL；安装孔和 PCB 尺寸尚待实测。</footer></main>
+<script type="module">
+import * as THREE from 'three';
+import {OrbitControls} from 'three/addons/controls/OrbitControls.js';
+const stage=document.getElementById('stage'), scene=new THREE.Scene(),camera=new THREE.PerspectiveCamera(40,1,1,2500);
+camera.position.set(340,190,500);
+const renderer=new THREE.WebGLRenderer({antialias:true,alpha:true});
+renderer.setPixelRatio(Math.min(window.devicePixelRatio||1,2));renderer.outputColorSpace=THREE.SRGBColorSpace;
+stage.prepend(renderer.domElement);
+const orbit=new OrbitControls(camera,renderer.domElement);orbit.enableDamping=true;orbit.minDistance=290;orbit.maxDistance=1000;
+scene.add(new THREE.HemisphereLight(0xe3f2ff,0x233044,2.6));const lamp=new THREE.DirectionalLight(0xffffff,2.2);lamp.position.set(-160,220,320);scene.add(lamp);
+const mat=(color,metalness=0,roughness=.6)=>new THREE.MeshStandardMaterial({color,metalness,roughness});
+const shellMat=mat(0x263444,.25,.7),frontMat=mat(0x101924,.5,.45),dark=mat(0x040a10),rim=mat(0x6b8394,.75,.32),cone=mat(0x1d303d,.25,.7),glow=new THREE.MeshBasicMaterial({color:0x25dbc8});
+const group=new THREE.Group();scene.add(group);
+const texCanvas=document.createElement('canvas');texCanvas.width=640;texCanvas.height=320;const ctx=texCanvas.getContext('2d');const texture=new THREE.CanvasTexture(texCanvas);texture.colorSpace=THREE.SRGBColorSpace;const screenMat=new THREE.MeshBasicMaterial({map:texture});
+let width=300,depth=85,mode='lyrics',rgb=true;
+function add(geometry,material,x,y,z,rotate=false){const mesh=new THREE.Mesh(geometry,material);if(rotate)mesh.rotation.x=Math.PI/2;mesh.position.set(x,y,z);group.add(mesh);return mesh}
+function box(w,h,d,m,x=0,y=0,z=0){return add(new THREE.BoxGeometry(w,h,d),m,x,y,z)}
+function disc(r,d,m,x,y,z){return add(new THREE.CylinderGeometry(r,r,d,48),m,x,y,z,true)}
+function rebuild(){for(const obj of [...group.children]){group.remove(obj);obj.geometry.dispose()}
+box(width,105,depth,shellMat);box(width-5,99,depth+1,frontMat);
+box(168,87,2,dark,0,0,depth/2+2);box(160,80,1,screenMat,0,0,depth/2+3.6);
+const sx=(width/2+83)/2;
+for(const x of [-sx,sx]){disc(24,3,rim,x,0,depth/2+3);disc(21,4,dark,x,0,depth/2+5);disc(17,5,cone,x,0,depth/2+7);disc(7,5,dark,x,0,depth/2+9)}
+if(rgb)box(width-24,2,3,glow,0,-51.7,depth/2);
+box(80,25,1,dark,0,0,-depth/2-1);box(16,9,2,rim,0,-5,-depth/2-2.5);
+}
+function paint(t){ctx.fillStyle='#02090c';ctx.fillRect(0,0,640,320);
+for(let y=0;y<32;y++)for(let x=0;x<64;x++){let on=false;
+if(mode==='spectrum'){let h=4+16*Math.abs(Math.sin(x*.13+t*1.3)*Math.cos(x*.08-t));on=y>31-h}
+else if(mode==='clock')on=(x>8&&x<56&&y>8&&y<24&&((x+y)%8<6));
+else on=(x>4&&x<60&&y>9&&y<23&&((x*3+y*7)%12<9));
+ctx.fillStyle=on?(mode==='spectrum'?'#44b9ef':'#36dcb8'):'#10262b';ctx.fillRect(x*10+2,y*10+2,6,6)}
+ctx.fillStyle='#eafff7';ctx.textAlign='center';ctx.font='bold 46px sans-serif';ctx.shadowColor='#21dbb8';ctx.shadowBlur=10;ctx.fillText(mode==='lyrics'?'♪ 像素歌词':mode==='clock'?'12 : 36':'MUSIC',320,181);ctx.shadowBlur=0;texture.needsUpdate=true}
+function resize(){let w=stage.clientWidth,h=stage.clientHeight;camera.aspect=w/h;camera.updateProjectionMatrix();renderer.setSize(w,h)}window.addEventListener('resize',resize);resize();rebuild();
+const views={iso:[340,190,500],front:[0,0,600],top:[0,600,1],back:[0,50,-600]};
+function setView(v){camera.position.set(...views[v]);orbit.target.set(0,0,0);orbit.update()}
+document.querySelectorAll('[data-view]').forEach(b=>b.addEventListener('click',()=>setView(b.dataset.view)));
+document.querySelectorAll('[data-mode]').forEach(b=>b.addEventListener('click',()=>mode=b.dataset.mode));
+document.getElementById('width').addEventListener('input',e=>{width=+e.target.value;document.getElementById('wv').textContent=width+' mm';rebuild()});
+document.getElementById('depth').addEventListener('input',e=>{depth=+e.target.value;document.getElementById('dv').textContent=depth+' mm';rebuild()});
+document.getElementById('rgb').addEventListener('change',e=>{rgb=e.target.checked;rebuild()});
+document.getElementById('reset').addEventListener('click',()=>setView('iso'));
+document.getElementById('status').textContent='单指旋转 · 双指缩放 · 点击下方按钮切换视角';
+function frame(t){requestAnimationFrame(frame);orbit.update();paint(t/1000);renderer.render(scene,camera)}requestAnimationFrame(frame);
+</script></body></html>
