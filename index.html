@@ -38,7 +38,7 @@ const lyricCanvas=document.createElement('canvas');lyricCanvas.width=640;lyricCa
 // Assembly visualization: modeled connectors, traces, screws, wiring and callout labels.
 // Routing and footprints are provisional until exact purchased part drawings are supplied.
 const wireMats={power:new T.MeshStandardMaterial({color:0xc84a46,roughness:.66}),ground:new T.MeshStandardMaterial({color:0x262a30,roughness:.7}),data:new T.MeshStandardMaterial({color:0xe5b54e,roughness:.64}),audio:new T.MeshStandardMaterial({color:0x668bc3,roughness:.64})};
-function wire(points,kind,parent,r=1.2){const curve=new T.CatmullRomCurve3(points.map(p=>new T.Vector3(...p)));return mesh(new T.TubeGeometry(curve,48,r,7,false),wireMats[kind],[],parent).position.set(0,0,0)}
+function wire(points,kind,parent,r=1.2){const curve=new T.CatmullRomCurve3(points.map(p=>new T.Vector3(...p)));return mesh(new T.TubeGeometry(curve,48,r,7,false),wireMats[kind],[0,0,0],parent)}
 function tag(text,x,y,z,parent){const c=document.createElement('canvas');c.width=512;c.height=96;const ctx=c.getContext('2d');ctx.fillStyle='rgba(8,13,18,.91)';ctx.fillRect(0,0,512,96);ctx.strokeStyle='#b7c2c9';ctx.lineWidth=3;ctx.strokeRect(3,3,506,90);ctx.fillStyle='#f3f5f5';ctx.font='bold 35px system-ui';ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillText(text,256,48);const tex=new T.CanvasTexture(c);const sp=new T.Sprite(new T.SpriteMaterial({map:tex,transparent:true,depthTest:false}));sp.position.set(x,y,z);sp.scale.set(75,14,1);parent.add(sp);return sp}
 function fastener(x,y,z,parent){cyl(2.5,1.4,metal,[x,y,z],parent);box(2.8,.55,.5,black,[x,y,z+1],parent)}
 function board(w,h,x,y,z,parent,color=pcb){const g=new T.Group();g.position.set(x,y,z);parent.add(g);rounded(w,h,2,2,color,[0,0,0],g);for(let xx of [-w/2+5,w/2-5])for(let yy of [-h/2+5,h/2-5]){cyl(2.2,2,black,[xx,yy,2],g);cyl(1.2,2,metal,[xx,yy,3],g)}for(let i=0;i<12;i++){const xx=-w/2+9+(i*13)%(w-18),yy=-h/2+9+(i*11)%(h-18);box(5,.6,.35,M(0xb5a05c,.55,.5),[xx,yy,1.4],g)}return g}
@@ -58,7 +58,7 @@ for(let x of [-W/2+16,-88,88,W/2-16]){box(4,78,10,graphite,[x,0,-27],tray);for(l
 for(let y of [-42,42])box(W-27,3,8,graphite,[0,y,-26],tray);
 // HUB75 LED matrix rear face, 64x32 simplified emitter array and ribbon header
 const matrix=board(160,80,0,0,23,internals,M(0x202d29,.12,.7));parts.matrix=matrix;
-for(let i=0;i<64;i++)for(let j=0;j<32;j++){const dot=box(1.35,1.35,.45,chip,[-78.5+i*2.48,-38.5+j*2.48,2.2],matrix);dot.castShadow=false}
+const dots=new T.InstancedMesh(new T.BoxGeometry(1.35,1.35,.45),chip,64*32);const dm=new T.Object3D();for(let i=0;i<64;i++)for(let j=0;j<32;j++){dm.position.set(-78.5+i*2.48,-38.5+j*2.48,2.2);dm.updateMatrix();dots.setMatrixAt(i*32+j,dm.matrix)}dots.instanceMatrix.needsUpdate=true;dots.castShadow=false;matrix.add(dots)
 for(let x of [-75,75])for(let y of [-35,35])fastener(x,y,27,internals);
 connector(54,-28,27,29,internals);connector(55,25,27,19,internals);
 // ESP32-S3 development board with radio module, antenna, pin headers and USB socket
