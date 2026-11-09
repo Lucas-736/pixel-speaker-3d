@@ -34,6 +34,16 @@ const mouse=new T.Group();mouse.position.set(380,22,275);mouse.rotation.y=-.24;d
 // Speaker enclosure, exploded components
 const chassis=new T.Group();product.add(chassis);const parts={};let currentWidth=310,explode=0,ambient=true,mode='lyrics';
 const lyricCanvas=document.createElement('canvas');lyricCanvas.width=640;lyricCanvas.height=320;const lc=lyricCanvas.getContext('2d');const lyricTex=new T.CanvasTexture(lyricCanvas);lyricTex.colorSpace=T.SRGBColorSpace;
+
+// Assembly visualization: modeled connectors, traces, screws, wiring and callout labels.
+// Routing and footprints are provisional until exact purchased part drawings are supplied.
+const wireMats={power:new T.MeshStandardMaterial({color:0xc84a46,roughness:.66}),ground:new T.MeshStandardMaterial({color:0x262a30,roughness:.7}),data:new T.MeshStandardMaterial({color:0xe5b54e,roughness:.64}),audio:new T.MeshStandardMaterial({color:0x668bc3,roughness:.64})};
+function wire(points,kind,parent,r=1.2){const curve=new T.CatmullRomCurve3(points.map(p=>new T.Vector3(...p)));return mesh(new T.TubeGeometry(curve,48,r,7,false),wireMats[kind],[],parent).position.set(0,0,0)}
+function tag(text,x,y,z,parent){const c=document.createElement('canvas');c.width=512;c.height=96;const ctx=c.getContext('2d');ctx.fillStyle='rgba(8,13,18,.91)';ctx.fillRect(0,0,512,96);ctx.strokeStyle='#b7c2c9';ctx.lineWidth=3;ctx.strokeRect(3,3,506,90);ctx.fillStyle='#f3f5f5';ctx.font='bold 35px system-ui';ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillText(text,256,48);const tex=new T.CanvasTexture(c);const sp=new T.Sprite(new T.SpriteMaterial({map:tex,transparent:true,depthTest:false}));sp.position.set(x,y,z);sp.scale.set(75,14,1);parent.add(sp);return sp}
+function fastener(x,y,z,parent){cyl(2.5,1.4,metal,[x,y,z],parent);box(2.8,.55,.5,black,[x,y,z+1],parent)}
+function board(w,h,x,y,z,parent,color=pcb){const g=new T.Group();g.position.set(x,y,z);parent.add(g);rounded(w,h,2,2,color,[0,0,0],g);for(let xx of [-w/2+5,w/2-5])for(let yy of [-h/2+5,h/2-5]){cyl(2.2,2,black,[xx,yy,2],g);cyl(1.2,2,metal,[xx,yy,3],g)}for(let i=0;i<12;i++){const xx=-w/2+9+(i*13)%(w-18),yy=-h/2+9+(i*11)%(h-18);box(5,.6,.35,M(0xb5a05c,.55,.5),[xx,yy,1.4],g)}return g}
+function connector(x,y,z,w,parent){box(w,8,6,M(0xe3e0d7,.05,.58),[x,y,z],parent);for(let i=0;i<Math.max(2,Math.floor(w/4));i++)box(1.2,3,1,metal,[x-w/2+2+i*4,y,z+3.3],parent)}
+function resistor(x,y,z,parent){box(6,2.8,2,M(0x35383a,.1,.8),[x,y,z],parent);box(1,.8,2,metal,[x-3.2,y,z],parent);box(1,.8,2,metal,[x+3.2,y,z],parent)}
 function buildSpeaker(){while(chassis.children.length){const o=chassis.children[0];chassis.remove(o);o.traverse(q=>{if(q.geometry)q.geometry.dispose()})}for(const k of Object.keys(parts))delete parts[k];
 const W=currentWidth;const shell=rounded(W,105,90,15,graphite,[0,0,0],chassis);parts.shell=shell;
 const face=rounded(W-7,98,3,12,black,[0,0,46.5],chassis);parts.face=face;
@@ -41,16 +51,58 @@ const display=new T.Group();chassis.add(display);parts.display=display;rounded(1
 const driverParts=[];const sx=W/2-35;
 for(let x of [-sx,sx]){const g=new T.Group();chassis.add(g);g.position.x=x;driverParts.push(g);cyl(23,5,edge,[0,0,51],g);cyl(19,6,rubber,[0,0,54],g);cyl(15,7,speakerCone,[0,0,58],g);cyl(7,8,black,[0,0,62],g);for(let a=0;a<8;a++){const ang=a*Math.PI/4;const h=box(2,36,1,edge,[Math.cos(ang)*10,Math.sin(ang)*10,65],g);h.rotation.z=ang}cyl(21,14,metal,[0,0,29],g)}parts.drivers=driverParts;
 const internals=new T.Group();chassis.add(internals);parts.internals=internals;
-box(74,42,2,pcb,[-34,-10,-9],internals);box(21,21,5,chip,[-44,-6,-4],internals);box(14,13,5,chip,[-18,-15,-4],internals);for(let i=0;i<10;i++)box(2,6,3,metal,[-66+i*6,-26,-4],internals);
-box(45,30,2,pcb,[57,-12,-12],internals);box(17,17,5,chip,[53,-9,-7],internals);for(let i=0;i<5;i++)box(4,8,6,metal,[39+i*8,-24,-7],internals);
-box(155,8,2,pcb,[0,31,13],internals);for(let i=0;i<16;i++)box(3,3,3,chip,[-71+i*9,31,17],internals);
+// Realistic mechanical mounting tray, ribs and standoffs
+const tray=new T.Group();internals.add(tray);parts.tray=tray;
+rounded(W-17,92,3,9,M(0x2b2e31,.35,.63),[0,0,-34],tray);
+for(let x of [-W/2+16,-88,88,W/2-16]){box(4,78,10,graphite,[x,0,-27],tray);for(let y of [-35,35]){cyl(3.5,12,metal,[x,y,-21],tray);fastener(x,y,-14,tray)}}
+for(let y of [-42,42])box(W-27,3,8,graphite,[0,y,-26],tray);
+// HUB75 LED matrix rear face, 64x32 simplified emitter array and ribbon header
+const matrix=board(160,80,0,0,23,internals,M(0x202d29,.12,.7));parts.matrix=matrix;
+for(let i=0;i<64;i++)for(let j=0;j<32;j++){const dot=box(1.35,1.35,.45,chip,[-78.5+i*2.48,-38.5+j*2.48,2.2],matrix);dot.castShadow=false}
+for(let x of [-75,75])for(let y of [-35,35])fastener(x,y,27,internals);
+connector(54,-28,27,29,internals);connector(55,25,27,19,internals);
+// ESP32-S3 development board with radio module, antenna, pin headers and USB socket
+const esp=board(62,31,-51,-18,-8,internals);parts.esp=esp;
+box(22,19,4,metal,[-12,0,4],esp);box(12,12,5,chip,[-12,0,7],esp);
+box(17,9,2,M(0x2c2d2f,.25,.45),[-24,0,5],esp);
+for(let i=0;i<11;i++){box(2,3,2,metal,[-25+i*5,-13,4],esp);box(2,3,2,metal,[-25+i*5,13,4],esp)}
+connector(27,0,4,9,esp);for(let i=0;i<8;i++)resistor(-5+i*3,10,4,esp);
+// Audio Bluetooth receiver + Class-D amplifier module, separated from LED drive
+const amp=board(61,35,51,-18,-8,internals);parts.amp=amp;
+box(18,18,5,chip,[-6,0,4],amp);box(12,10,4,metal,[15,6,4],amp);
+for(let i=0;i<2;i++){cyl(5,9,M(0x43474a,.55,.4),[-18+i*32,-9,6],amp)}
+connector(-24,10,4,12,amp);connector(23,-10,4,16,amp);
+for(let i=0;i<8;i++)resistor(-10+i*5,14,4,amp);
+// DC power distribution board, fuse, capacitor, terminal blocks
+const power=board(56,24,0,25,-13,internals);parts.power=power;
+connector(-19,0,4,14,power);connector(20,0,4,12,power);
+cyl(5,11,M(0x383d42,.35,.45),[0,0,7],power);
+for(let i=0;i<4;i++)resistor(-12+i*8,-7,4,power);
+// Ports, strain relief and rear external jack block
+const ports=new T.Group();internals.add(ports);parts.ports=ports;
+box(45,18,14,black,[0,-33,-34],ports);box(12,7,2,metal,[-11,-33,-42],ports);cyl(4.5,3,metal,[12,-33,-42],ports);
+// Ribbon cable: matrix -> controller, power loom -> display and amp, audio loom -> drivers
+const harness=new T.Group();internals.add(harness);parts.harness=harness;
+for(let i=0;i<8;i++)wire([[52+i*.9,-28,25],[34+i*.9,-38,8],[-12+i*.5,-38,3],[-50+i*.3,-25,-2]],'data',harness,.56);
+for(let i=0;i<2;i++)wire([[-20+i*3,25,-10],[-35+i*3,10,-4],[-55+i*3,-13,-3]],i?'ground':'power',harness,1.3);
+for(let i=0;i<2;i++)wire([[16+i*3,25,-10],[39+i*3,10,-5],[55+i*3,-13,-4]],i?'ground':'power',harness,1.3);
+wire([[0,25,-8],[14,36,6],[55,25,26]],'power',harness,1.1);
+wire([[4,25,-8],[20,35,7],[60,25,26]],'ground',harness,1.1);
+for(let sign of [-1,1])for(let i=0;i<2;i++)wire([[55+sign*9,-16+i*4,-4],[sign*83,-29+i*5,0],[sign*(W/2-35),-12+i*7,28]],i?'ground':'audio',harness,1.1);
+wire([[12,-33,-37],[6,0,-23],[0,25,-11]],'power',harness,1.2);
+wire([[16,-33,-37],[10,2,-24],[5,25,-11]],'ground',harness,1.2);
+// Printed labels float above parts only when dismantled
+const labels=new T.Group();internals.add(labels);parts.labels=labels;
+tag('HUB75 64×32',0,53,40,labels);tag('ESP32-S3',-54,-51,4,labels);
+tag('BT + AMP',55,-51,4,labels);tag('POWER',0,48,-5,labels);
+tag('DATA RIBBON',-48,-42,33,labels);tag('I/O PORTS',0,-55,-36,labels);
 const back=rounded(W-8,98,4,11,graphite,[0,0,-48],chassis);parts.back=back;for(let x of [-W/2+18,W/2-18])for(let y of [-36,36])cyl(2,2,metal,[x,y,-51],chassis);
 const strip=box(W-30,2,4,teal,[0,-52,38],chassis);parts.strip=strip;strip.visible=ambient;
 }
 buildSpeaker();product.position.set(0,78,150);
 // floor light glow
 const ambientLight=new T.PointLight(0xa4c4c2,7,300);ambientLight.position.set(0,28,205);scene.add(ambientLight);
-function updateExplode(){const t=explode/100;parts.face.position.z=46.5+22*t;parts.display.position.z=30*t;parts.drivers.forEach((g,i)=>{g.position.z=40*t;g.position.x=(i===0?-1:1)*(currentWidth/2-35+22*t)});parts.internals.position.z=-12*t;parts.back.position.z=-48-80*t;parts.strip.visible=ambient;ambientLight.intensity=ambient?7:0}
+function updateExplode(){const t=explode/100;parts.face.position.z=46.5+22*t;parts.display.position.z=30*t;parts.drivers.forEach((g,i)=>{g.position.z=40*t;g.position.x=(i===0?-1:1)*(currentWidth/2-35+22*t)});parts.internals.position.z=-12*t;parts.shell.visible=t<.08;parts.face.visible=t<.55;parts.labels.visible=t>.18;parts.matrix.visible=t>.18;parts.back.position.z=-48-80*t;parts.strip.visible=ambient;ambientLight.intensity=ambient?7:0}
 function drawPixels(t){lc.fillStyle='#041015';lc.fillRect(0,0,640,320);for(let y=0;y<32;y++)for(let x=0;x<64;x++){let on=false;if(mode==='spectrum')on=y>31-(3+22*Math.abs(Math.sin(x*.12+t*.9)*Math.cos(x*.06-t*.4)));else if(mode==='clock')on=(x>10&&x<55&&y>9&&y<24&&((x*3+y*5)%9<7));else on=(x>3&&x<60&&y>10&&y<22&&((x*5+y*3)%13<10));lc.fillStyle=on?'#c6d8d6':'#1b2829';lc.fillRect(x*10+2,y*10+2,6,6)}lc.fillStyle='#eef2f0';lc.font='bold 49px system-ui';lc.textAlign='center';lc.shadowColor='#afc7c3';lc.shadowBlur=15;lc.fillText(mode==='lyrics'?'♪ 像素歌词':mode==='clock'?'12 : 36':'MUSIC',320,180);lc.shadowBlur=0;lyricTex.needsUpdate=true}
 function view(v){document.querySelectorAll('[data-view]').forEach(b=>b.classList.toggle('on',b.dataset.view===v));const title=document.getElementById('sceneTitle'),sub=document.getElementById('sceneSub');if(v==='desk'){deskGroup.visible=true;product.position.set(0,78,150);explode=0;document.getElementById('explode').value=0;updateExplode();camera.position.set(610,385,750);orbit.target.set(0,230,20);title.textContent='DESK SETUP / 01';sub.textContent='AOC 27” · MacBook Air · Lift · Pixel Speaker'}else{deskGroup.visible=false;product.position.set(0,0,0);orbit.target.set(0,0,0);camera.position.set(v==='front'?0:v==='inside'?180:260,v==='front'?0:145,v==='front'?480:v==='inside'?320:440);if(v==='explode'){explode=80;document.getElementById('explode').value=80}else if(v==='inside'){explode=100;document.getElementById('explode').value=100}else{explode=0;document.getElementById('explode').value=0}updateExplode();title.textContent=v==='explode'?'EXPLODED VIEW / 03':v==='inside'?'INTERNAL LAYOUT / 04':'PRODUCT STUDY / 02';sub.textContent='HUB75 · ESP32-S3 · Bluetooth AMP · Stereo Drivers'}orbit.update()}
 document.querySelectorAll('[data-view]').forEach(b=>b.addEventListener('click',()=>view(b.dataset.view)));
