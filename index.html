@@ -1,56 +1,61 @@
-<!doctype html>
-<html lang="zh-CN"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Pixel Speaker 3D</title>
-<style>*{box-sizing:border-box}body{margin:0;background:#0b111b;color:#e9f4ff;font:14px -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}header{padding:17px 18px;border-bottom:1px solid #2c3b4d}h1{font-size:20px;margin:0 0 5px}small,p{color:#a4b7c9}#stage{height:57vh;min-height:350px;max-height:650px;position:relative;background:radial-gradient(ellipse,#24384b,#0b111b 73%);touch-action:none}canvas{display:block;touch-action:none}#status{position:absolute;left:12px;bottom:12px;color:#b8d1df;font-size:12px;pointer-events:none}#error{display:none;padding:16px;background:#422a32;color:#fff}main{max-width:1000px;margin:auto}.controls{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:12px;padding:14px}.panel{background:#172331;border:1px solid #35485b;border-radius:12px;padding:13px}.panel b{display:block;margin-bottom:10px}button{background:#25384a;color:#e7f8ff;border:1px solid #4a6076;padding:10px;border-radius:9px;margin:2px}button:active{background:#177d79}label{display:flex;justify-content:space-between;margin:12px 0}input[type=range]{width:55%;accent-color:#27d8c4}footer{padding:10px 18px 25px;line-height:1.7;color:#9bafc2}</style>
-<script type="importmap">{"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.170.0/build/three.module.js","three/addons/":"https://cdn.jsdelivr.net/npm/three@0.170.0/examples/jsm/"}}</script></head>
-<body><main><header><h1>PIXEL SPEAKER / 3D STUDIO</h1><small>手机可旋转的 DIY 像素歌词音箱 · V3.1</small></header>
-<div id="stage"><div id="status">加载中… 单指旋转 · 双指缩放</div></div><div id="error">3D 加载失败。请检查网络，或使用新版 Safari / Chrome 打开。</div>
-<div class="controls"><section class="panel"><b>观察视角</b><button data-view="iso">45°</button><button data-view="front">正面</button><button data-view="top">俯视</button><button data-view="back">背面</button></section>
-<section class="panel"><b>像素屏预览</b><button data-mode="lyrics">歌词</button><button data-mode="clock">时钟</button><button data-mode="spectrum">频谱</button></section>
-<section class="panel"><b>外形尺寸</b><label>宽度 <output id="wv">300 mm</output></label><input id="width" type="range" min="280" max="380" value="300"><label>深度 <output id="dv">85 mm</output></label><input id="depth" type="range" min="70" max="120" value="85"></section>
-<section class="panel"><b>外观设置</b><label>底部 RGB 灯 <input id="rgb" type="checkbox" checked></label><button id="reset">恢复默认视角</button></section></div>
-<footer>外观概念：300 × 105 × 85 mm；P2.5 64×32 RGB 屏幕，发光区约 160 × 80 mm；左右 40 mm 扬声器。不是可打印的 CAD/STL；安装孔和 PCB 尺寸尚待实测。</footer></main>
+<!doctype html><html lang="zh-CN"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="theme-color" content="#080d14"><title>PIXEL / STUDIO — Desktop & Exploded View</title>
+<style>*{box-sizing:border-box}body{margin:0;background:#080d14;color:#eaf4ff;font:14px -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}header{display:flex;align-items:center;justify-content:space-between;padding:13px 17px;background:#0d1520;border-bottom:1px solid #293648}h1{font-size:17px;letter-spacing:.13em;margin:0}small{color:#7e9bb1;font-size:11px}#viewport{height:66svh;min-height:390px;position:relative;touch-action:none;overflow:hidden;background:radial-gradient(ellipse at 55% 30%,#243348,#090f18 75%)}canvas{display:block;touch-action:none}#hud{position:absolute;left:16px;top:16px;pointer-events:none}#hud strong{display:block;letter-spacing:.14em;font-size:12px}#hud span{display:block;margin-top:5px;color:#95b3c5;font-size:11px}#hint{position:absolute;bottom:12px;left:15px;font-size:11px;color:#b1c3d0;pointer-events:none}#error{display:none;background:#532b37;padding:14px}main{max-width:1500px;margin:auto}.toolbar{display:flex;gap:8px;padding:12px 13px;overflow-x:auto;scrollbar-width:none}.toolbar button,.panel button{white-space:nowrap;border:1px solid #354c60;background:#182738;color:#dceefb;border-radius:10px;padding:10px 13px;font-size:12px}.toolbar button.on,.panel button.on{background:#116c72;border-color:#36c9c5;color:white}.panels{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:10px;padding:0 13px 14px}.panel{border:1px solid #283d51;border-radius:13px;background:#111d2a;padding:13px}.panel h3{font-size:13px;margin:0 0 10px;letter-spacing:.07em}.panel p{font-size:12px;color:#a6bccd;line-height:1.6;margin:8px 0}.panel label{display:flex;justify-content:space-between;align-items:center;margin:12px 0;color:#c4d5e0;font-size:12px}input[type=range]{width:58%;accent-color:#35d6cc}footer{color:#8da5b8;padding:5px 15px 25px;font-size:12px;line-height:1.7}.pill{border:1px solid #37616c;color:#6ee8db;padding:4px 8px;border-radius:30px;font-size:10px}</style>
+<script type="importmap">{"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.170.0/build/three.module.js","three/addons/":"https://cdn.jsdelivr.net/npm/three@0.170.0/examples/jsm/"}}</script></head><body><main><header><div><h1>PIXEL / STUDIO</h1><small>DESKTOP CONCEPT LAB · V4.0</small></div><span class="pill">INTERACTIVE 3D</span></header>
+<div id="viewport"><div id="hud"><strong id="sceneTitle">DESK SETUP / 01</strong><span id="sceneSub">AOC 27” · MacBook Air · Lift · Pixel Speaker</span></div><div id="hint">单指旋转 · 双指缩放 · 拖动探索</div></div><div id="error">无法加载 3D 引擎，请确认 Safari 网络可访问 jsDelivr CDN。</div>
+<div class="toolbar"><button class="on" data-view="desk">完整桌搭</button><button data-view="product">音箱特写</button><button data-view="explode">爆炸拆解</button><button data-view="inside">内部结构</button><button data-view="front">正视图</button></div>
+<div class="panels"><section class="panel"><h3>展示模式</h3><button data-mode="lyrics" class="on">像素歌词</button><button data-mode="clock">时钟</button><button data-mode="spectrum">频谱</button><label>氛围灯 <input id="ambient" type="checkbox" checked></label></section>
+<section class="panel"><h3>结构拆解</h3><label>拆解程度 <input id="explode" type="range" min="0" max="100" value="0"></label><p>滑动查看屏幕、扬声器、主控、功放、背盖等模块的分离位置。部件尺寸为概念示意。</p></section>
+<section class="panel"><h3>外观调节</h3><label>音箱宽度 <input id="width" type="range" min="290" max="360" value="310"></label><label>环境亮度 <input id="light" type="range" min="50" max="180" value="100"></label><p id="dimension">310 × 105 × 90 mm · 屏幕发光区 160 × 80 mm</p></section></div>
+<footer>概念可视化，不是制造级 CAD。AOC U27N3C、MacBook Air、Logitech Lift 的外观为简化参考模型；HUB75 屏、ESP32-S3、功放、扬声器及固定孔位均须按实际采购零件复核。歌词/频谱为演示动画，尚未连接网易云音乐。</footer></main>
 <script type="module">
-import * as THREE from 'three';
-import {OrbitControls} from 'three/addons/controls/OrbitControls.js';
-const stage=document.getElementById('stage'), scene=new THREE.Scene(),camera=new THREE.PerspectiveCamera(40,1,1,2500);
-camera.position.set(340,190,500);
-const renderer=new THREE.WebGLRenderer({antialias:true,alpha:true});
-renderer.setPixelRatio(Math.min(window.devicePixelRatio||1,2));renderer.outputColorSpace=THREE.SRGBColorSpace;
-stage.prepend(renderer.domElement);
-const orbit=new OrbitControls(camera,renderer.domElement);orbit.enableDamping=true;orbit.minDistance=290;orbit.maxDistance=1000;
-scene.add(new THREE.HemisphereLight(0xe3f2ff,0x233044,2.6));const lamp=new THREE.DirectionalLight(0xffffff,2.2);lamp.position.set(-160,220,320);scene.add(lamp);
-const mat=(color,metalness=0,roughness=.6)=>new THREE.MeshStandardMaterial({color,metalness,roughness});
-const shellMat=mat(0x263444,.25,.7),frontMat=mat(0x101924,.5,.45),dark=mat(0x040a10),rim=mat(0x6b8394,.75,.32),cone=mat(0x1d303d,.25,.7),glow=new THREE.MeshBasicMaterial({color:0x25dbc8});
-const group=new THREE.Group();scene.add(group);
-const texCanvas=document.createElement('canvas');texCanvas.width=640;texCanvas.height=320;const ctx=texCanvas.getContext('2d');const texture=new THREE.CanvasTexture(texCanvas);texture.colorSpace=THREE.SRGBColorSpace;const screenMat=new THREE.MeshBasicMaterial({map:texture});
-let width=300,depth=85,mode='lyrics',rgb=true;
-function add(geometry,material,x,y,z,rotate=false){const mesh=new THREE.Mesh(geometry,material);if(rotate)mesh.rotation.x=Math.PI/2;mesh.position.set(x,y,z);group.add(mesh);return mesh}
-function box(w,h,d,m,x=0,y=0,z=0){return add(new THREE.BoxGeometry(w,h,d),m,x,y,z)}
-function disc(r,d,m,x,y,z){return add(new THREE.CylinderGeometry(r,r,d,48),m,x,y,z,true)}
-function rebuild(){for(const obj of [...group.children]){group.remove(obj);obj.geometry.dispose()}
-box(width,105,depth,shellMat);box(width-5,99,depth+1,frontMat);
-box(168,87,2,dark,0,0,depth/2+2);box(160,80,1,screenMat,0,0,depth/2+3.6);
-const sx=(width/2+83)/2;
-for(const x of [-sx,sx]){disc(24,3,rim,x,0,depth/2+3);disc(21,4,dark,x,0,depth/2+5);disc(17,5,cone,x,0,depth/2+7);disc(7,5,dark,x,0,depth/2+9)}
-if(rgb)box(width-24,2,3,glow,0,-51.7,depth/2);
-box(80,25,1,dark,0,0,-depth/2-1);box(16,9,2,rim,0,-5,-depth/2-2.5);
+import * as T from 'three';import {OrbitControls} from 'three/addons/controls/OrbitControls.js';
+const vp=document.getElementById('viewport');const scene=new T.Scene();scene.background=new T.Color(0x0b121c);scene.fog=new T.Fog(0x0b121c,850,2300);
+const camera=new T.PerspectiveCamera(38,1,1,3500);camera.position.set(600,370,700);
+const renderer=new T.WebGLRenderer({antialias:true,alpha:false,powerPreference:'high-performance'});renderer.setPixelRatio(Math.min(devicePixelRatio||1,1.8));renderer.shadowMap.enabled=true;renderer.shadowMap.type=T.PCFSoftShadowMap;renderer.toneMapping=T.ACESFilmicToneMapping;renderer.toneMappingExposure=1.3;renderer.outputColorSpace=T.SRGBColorSpace;vp.prepend(renderer.domElement);
+const orbit=new OrbitControls(camera,renderer.domElement);orbit.enableDamping=true;orbit.dampingFactor=.07;orbit.minDistance=120;orbit.maxDistance=1900;orbit.maxPolarAngle=Math.PI*.53;orbit.target.set(0,75,0);
+scene.add(new T.HemisphereLight(0xa7c8ef,0x17202c,2.0));const key=new T.DirectionalLight(0xfff0dd,3.4);key.position.set(-340,650,470);key.castShadow=true;key.shadow.mapSize.set(2048,2048);key.shadow.camera.left=-750;key.shadow.camera.right=750;key.shadow.camera.top=700;key.shadow.camera.bottom=-700;key.shadow.bias=-.0002;scene.add(key);const fill=new T.PointLight(0x50baf0,85,900);fill.position.set(340,250,-250);scene.add(fill);
+const M=(c,metal=.1,rough=.55)=>new T.MeshStandardMaterial({color:c,metalness:metal,roughness:rough});
+const graphite=M(0x1a232e,.65,.33),black=M(0x080e15,.5,.42),edge=M(0x4a5c69,.75,.3),speakerCone=M(0x26323d,.2,.75),wood=M(0x5c4437,.1,.75),rubber=M(0x10171d,.1,.88),pcb=M(0x17665b,.15,.65),chip=M(0x101b23,.3,.42),metal=M(0x8c9daa,.85,.22),teal=new T.MeshBasicMaterial({color:0x28e7d6}),glass=new T.MeshPhysicalMaterial({color:0x152c37,metalness:.05,roughness:.12,transmission:.08,transparent:true,opacity:.9});
+const world=new T.Group(),deskGroup=new T.Group(),product=new T.Group();scene.add(world);world.add(deskGroup,product);
+function mesh(g,m,p=[0,0,0],parent=world){const o=new T.Mesh(g,m);o.position.set(...p);o.castShadow=true;o.receiveShadow=true;parent.add(o);return o}
+function box(w,h,d,m,p,parent){return mesh(new T.BoxGeometry(w,h,d),m,p,parent)}
+function cyl(r,depth,m,p,parent){const o=mesh(new T.CylinderGeometry(r,r,depth,48),m,p,parent);o.rotation.x=Math.PI/2;return o}
+function rounded(w,h,d,r,m,p,parent){const s=new T.Shape(),x=-w/2,y=-h/2;s.moveTo(x+r,y);s.lineTo(x+w-r,y);s.quadraticCurveTo(x+w,y,x+w,y+r);s.lineTo(x+w,y+h-r);s.quadraticCurveTo(x+w,y+h,x+w-r,y+h);s.lineTo(x+r,y+h);s.quadraticCurveTo(x,y+h,x,y+h-r);s.lineTo(x,y+r);s.quadraticCurveTo(x,y,x+r,y);const g=new T.ExtrudeGeometry(s,{depth:d,bevelEnabled:true,bevelThickness:1.5,bevelSize:1.5,bevelSegments:3,steps:1,curveSegments:6});g.translate(0,0,-d/2);return mesh(g,m,p,parent)}
+// Ground and realistic desktop
+box(1800,18,950,wood,[0,-18,0],deskGroup);box(1800,4,950,M(0x73594a,.05,.6),[0,-7,0],deskGroup);for(let x of [-790,790])box(35,500,35,graphite,[x,-275,310],deskGroup);
+const screen=rounded(610,355,16,12,graphite,[0,405,-165],deskGroup);rounded(590,335,2,4,black,[0,405,-154],deskGroup);
+const wallCanvas=document.createElement('canvas');wallCanvas.width=1024;wallCanvas.height=576;const wc=wallCanvas.getContext('2d');const grad=wc.createLinearGradient(0,0,1024,576);grad.addColorStop(0,'#12304c');grad.addColorStop(.55,'#1a3d4c');grad.addColorStop(1,'#0b1425');wc.fillStyle=grad;wc.fillRect(0,0,1024,576);wc.fillStyle='#70d6d0';wc.font='bold 72px system-ui';wc.fillText('FOCUS MODE',82,265);wc.fillStyle='#a7c3d0';wc.font='30px system-ui';wc.fillText('CREATE  /  EXPLORE  /  BUILD',85,325);const wallTex=new T.CanvasTexture(wallCanvas);wallTex.colorSpace=T.SRGBColorSpace;box(576,323,1,new T.MeshBasicMaterial({map:wallTex}),[0,405,-151],deskGroup);box(16,200,16,metal,[0,125,-175],deskGroup);rounded(220,8,130,12,graphite,[0,20,-135],deskGroup);
+const laptop=new T.Group();laptop.position.set(-405,19,105);laptop.rotation.y=.16;deskGroup.add(laptop);rounded(250,10,175,12,metal,[0,0,0],laptop);const lid=rounded(248,165,6,9,graphite,[0,98,-83],laptop);lid.rotation.x=-.12;box(230,145,1,new T.MeshBasicMaterial({color:0x29475a}),[0,98,-79],laptop);for(let i=0;i<12;i++)for(let j=0;j<5;j++)box(15,1,11,black,[-101+i*18,6,-59+j*23],laptop);
+const keyboard=new T.Group();keyboard.position.set(80,5,285);deskGroup.add(keyboard);rounded(370,11,118,10,graphite,[0,0,0],keyboard);for(let i=0;i<19;i++)for(let j=0;j<4;j++)rounded(15,2,19,2,black,[-167+i*18,7,-38+j*24],keyboard);
+const mouse=new T.Group();mouse.position.set(380,22,275);mouse.rotation.y=-.24;deskGroup.add(mouse);const mouseBody=mesh(new T.SphereGeometry(36,32,20),M(0x49545b,.35,.55),[0,14,0],mouse);mouseBody.scale.set(.8,.95,1.4);box(2,7,21,black,[-1,45,-12],mouse);cyl(4,6,black,[0,44,-18],mouse);
+// Speaker enclosure, exploded components
+const chassis=new T.Group();product.add(chassis);const parts={};let currentWidth=310,explode=0,ambient=true,mode='lyrics';
+const lyricCanvas=document.createElement('canvas');lyricCanvas.width=640;lyricCanvas.height=320;const lc=lyricCanvas.getContext('2d');const lyricTex=new T.CanvasTexture(lyricCanvas);lyricTex.colorSpace=T.SRGBColorSpace;
+function buildSpeaker(){while(chassis.children.length){const o=chassis.children[0];chassis.remove(o);o.traverse(q=>{if(q.geometry)q.geometry.dispose()})}for(const k of Object.keys(parts))delete parts[k];
+const W=currentWidth;const shell=rounded(W,105,90,15,graphite,[0,0,0],chassis);parts.shell=shell;
+const face=rounded(W-7,98,3,12,black,[0,0,46.5],chassis);parts.face=face;
+const display=new T.Group();chassis.add(display);parts.display=display;rounded(170,88,3,4,edge,[0,0,49],display);box(160,80,2,new T.MeshBasicMaterial({map:lyricTex}),[0,0,51.5],display);rounded(166,84,1,3,glass,[0,0,53],display);
+const driverParts=[];const sx=W/2-35;
+for(let x of [-sx,sx]){const g=new T.Group();chassis.add(g);g.position.x=x;driverParts.push(g);cyl(23,5,edge,[0,0,51],g);cyl(19,6,rubber,[0,0,54],g);cyl(15,7,speakerCone,[0,0,58],g);cyl(7,8,black,[0,0,62],g);for(let a=0;a<8;a++){const ang=a*Math.PI/4;const h=box(2,36,1,edge,[Math.cos(ang)*10,Math.sin(ang)*10,65],g);h.rotation.z=ang}cyl(21,14,metal,[0,0,29],g)}parts.drivers=driverParts;
+const internals=new T.Group();chassis.add(internals);parts.internals=internals;
+box(74,42,2,pcb,[-34,-10,-9],internals);box(21,21,5,chip,[-44,-6,-4],internals);box(14,13,5,chip,[-18,-15,-4],internals);for(let i=0;i<10;i++)box(2,6,3,metal,[-66+i*6,-26,-4],internals);
+box(45,30,2,pcb,[57,-12,-12],internals);box(17,17,5,chip,[53,-9,-7],internals);for(let i=0;i<5;i++)box(4,8,6,metal,[39+i*8,-24,-7],internals);
+box(155,8,2,pcb,[0,31,13],internals);for(let i=0;i<16;i++)box(3,3,3,chip,[-71+i*9,31,17],internals);
+const back=rounded(W-8,98,4,11,graphite,[0,0,-48],chassis);parts.back=back;for(let x of [-W/2+18,W/2-18])for(let y of [-36,36])cyl(2,2,metal,[x,y,-51],chassis);
+const strip=box(W-30,2,4,teal,[0,-52,38],chassis);parts.strip=strip;strip.visible=ambient;
 }
-function paint(t){ctx.fillStyle='#02090c';ctx.fillRect(0,0,640,320);
-for(let y=0;y<32;y++)for(let x=0;x<64;x++){let on=false;
-if(mode==='spectrum'){let h=4+16*Math.abs(Math.sin(x*.13+t*1.3)*Math.cos(x*.08-t));on=y>31-h}
-else if(mode==='clock')on=(x>8&&x<56&&y>8&&y<24&&((x+y)%8<6));
-else on=(x>4&&x<60&&y>9&&y<23&&((x*3+y*7)%12<9));
-ctx.fillStyle=on?(mode==='spectrum'?'#44b9ef':'#36dcb8'):'#10262b';ctx.fillRect(x*10+2,y*10+2,6,6)}
-ctx.fillStyle='#eafff7';ctx.textAlign='center';ctx.font='bold 46px sans-serif';ctx.shadowColor='#21dbb8';ctx.shadowBlur=10;ctx.fillText(mode==='lyrics'?'♪ 像素歌词':mode==='clock'?'12 : 36':'MUSIC',320,181);ctx.shadowBlur=0;texture.needsUpdate=true}
-function resize(){let w=stage.clientWidth,h=stage.clientHeight;camera.aspect=w/h;camera.updateProjectionMatrix();renderer.setSize(w,h)}window.addEventListener('resize',resize);resize();rebuild();
-const views={iso:[340,190,500],front:[0,0,600],top:[0,600,1],back:[0,50,-600]};
-function setView(v){camera.position.set(...views[v]);orbit.target.set(0,0,0);orbit.update()}
-document.querySelectorAll('[data-view]').forEach(b=>b.addEventListener('click',()=>setView(b.dataset.view)));
-document.querySelectorAll('[data-mode]').forEach(b=>b.addEventListener('click',()=>mode=b.dataset.mode));
-document.getElementById('width').addEventListener('input',e=>{width=+e.target.value;document.getElementById('wv').textContent=width+' mm';rebuild()});
-document.getElementById('depth').addEventListener('input',e=>{depth=+e.target.value;document.getElementById('dv').textContent=depth+' mm';rebuild()});
-document.getElementById('rgb').addEventListener('change',e=>{rgb=e.target.checked;rebuild()});
-document.getElementById('reset').addEventListener('click',()=>setView('iso'));
-document.getElementById('status').textContent='单指旋转 · 双指缩放 · 点击下方按钮切换视角';
-function frame(t){requestAnimationFrame(frame);orbit.update();paint(t/1000);renderer.render(scene,camera)}requestAnimationFrame(frame);
+buildSpeaker();product.position.set(0,78,150);
+// floor light glow
+const ambientLight=new T.PointLight(0x20f3e2,25,400);ambientLight.position.set(0,28,205);scene.add(ambientLight);
+function updateExplode(){const t=explode/100;parts.face.position.z=46.5+22*t;parts.display.position.z=30*t;parts.drivers.forEach((g,i)=>{g.position.z=40*t;g.position.x=(i===0?-1:1)*(currentWidth/2-35+22*t)});parts.internals.position.z=-12*t;parts.back.position.z=-48-80*t;parts.strip.visible=ambient;ambientLight.intensity=ambient?25:0}
+function drawPixels(t){lc.fillStyle='#041015';lc.fillRect(0,0,640,320);for(let y=0;y<32;y++)for(let x=0;x<64;x++){let on=false;if(mode==='spectrum')on=y>31-(3+22*Math.abs(Math.sin(x*.12+t*.9)*Math.cos(x*.06-t*.4)));else if(mode==='clock')on=(x>10&&x<55&&y>9&&y<24&&((x*3+y*5)%9<7));else on=(x>3&&x<60&&y>10&&y<22&&((x*5+y*3)%13<10));lc.fillStyle=on?'#27e4c5':'#12343b';lc.fillRect(x*10+2,y*10+2,6,6)}lc.fillStyle='#d6fff8';lc.font='bold 49px system-ui';lc.textAlign='center';lc.shadowColor='#00ddc9';lc.shadowBlur=15;lc.fillText(mode==='lyrics'?'♪ 像素歌词':mode==='clock'?'12 : 36':'MUSIC',320,180);lc.shadowBlur=0;lyricTex.needsUpdate=true}
+function view(v){document.querySelectorAll('[data-view]').forEach(b=>b.classList.toggle('on',b.dataset.view===v));const title=document.getElementById('sceneTitle'),sub=document.getElementById('sceneSub');if(v==='desk'){deskGroup.visible=true;product.position.set(0,78,150);explode=0;document.getElementById('explode').value=0;updateExplode();camera.position.set(610,385,750);orbit.target.set(0,230,20);title.textContent='DESK SETUP / 01';sub.textContent='AOC 27” · MacBook Air · Lift · Pixel Speaker'}else{deskGroup.visible=false;product.position.set(0,0,0);orbit.target.set(0,0,0);camera.position.set(v==='front'?0:v==='inside'?180:260,v==='front'?0:145,v==='front'?480:v==='inside'?320:440);if(v==='explode'){explode=80;document.getElementById('explode').value=80}else if(v==='inside'){explode=100;document.getElementById('explode').value=100}else{explode=0;document.getElementById('explode').value=0}updateExplode();title.textContent=v==='explode'?'EXPLODED VIEW / 03':v==='inside'?'INTERNAL LAYOUT / 04':'PRODUCT STUDY / 02';sub.textContent='HUB75 · ESP32-S3 · Bluetooth AMP · Stereo Drivers'}orbit.update()}
+document.querySelectorAll('[data-view]').forEach(b=>b.addEventListener('click',()=>view(b.dataset.view)));
+document.querySelectorAll('[data-mode]').forEach(b=>b.addEventListener('click',()=>{mode=b.dataset.mode;document.querySelectorAll('[data-mode]').forEach(x=>x.classList.toggle('on',x===b))}));
+document.getElementById('explode').addEventListener('input',e=>{explode=+e.target.value;if(deskGroup.visible)view('product');explode=+e.target.value;updateExplode()});
+document.getElementById('width').addEventListener('input',e=>{currentWidth=+e.target.value;buildSpeaker();updateExplode();document.getElementById('dimension').textContent=currentWidth+' × 105 × 90 mm · 屏幕发光区 160 × 80 mm'});
+document.getElementById('ambient').addEventListener('change',e=>{ambient=e.target.checked;updateExplode()});
+document.getElementById('light').addEventListener('input',e=>{renderer.toneMappingExposure=1.3*(+e.target.value/100)});
+function resize(){const w=vp.clientWidth,h=vp.clientHeight;camera.aspect=w/h;camera.updateProjectionMatrix();renderer.setSize(w,h)}addEventListener('resize',resize);resize();view('desk');
+function animate(ms){requestAnimationFrame(animate);orbit.update();drawPixels(ms/1000);renderer.render(scene,camera)}requestAnimationFrame(animate);
 </script></body></html>
